@@ -36,3 +36,5 @@ Route::get('make_migration', function (Request $request){
     $name = $request->input('name');
     Artisan::call('make:migration', ['name' => $name]);
 });
+
+Route::apiResource('buttons', 'API\ButtonController');
