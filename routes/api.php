@@ -40,7 +40,6 @@ Route::get('make_migration', function (Request $request){
 //Route::apiResource('buttons', 'API\ButtonController');
 
 Route::get('buttons', 'API\ButtonController@index');
-Route::get('buttons/{button}', 'API\ButtonController@show');
 Route::post('buttons', 'API\ButtonController@store');
-Route::get('buttons/{button}/delete', 'API\ButtonController@destroy');
-Route::post('buttons/{button}/update', 'API\ButtonController@update');
+Route::get('buttons/delete', 'API\ButtonController@destroy');
+Route::post('buttons/update', 'API\ButtonController@update');

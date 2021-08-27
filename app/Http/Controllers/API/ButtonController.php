@@ -4,74 +4,96 @@ namespace App\Http\Controllers\API;
 
 use App\Button;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ButtonCollection;
-use App\Http\Resources\ButtonResource;
-use Exception;
+use App\Http\Services\ButtonService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 
 class ButtonController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return ButtonCollection
+     * @param Request $request
+     * @param ButtonService $buttonService
+     * @return JsonResponse
      */
-    public function index(): ButtonCollection
+    public function index(Request $request, ButtonService $buttonService): JsonResponse
     {
-        return new ButtonCollection(Button::all());
+        if ($request->has('key')){
+            /** @var Button $buttons */
+            $buttons = Button::where('key', $request->input('key'))->get();
+        } else {
+            /** @var Button $buttons */
+            $buttons = Button::all();
+        }
+
+        if ($buttons->isEmpty()){
+            return Response::json(['Buttons not found'], 404);
+        }
+
+        return $buttonService->getJsonResponse($buttons);
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param Request $request
-     * @return ButtonResource
+     * @param ButtonService $buttonService
+     * @return JsonResponse
      */
-    public function store(Request $request): ButtonResource
+    public function store(Request $request, ButtonService $buttonService): JsonResponse
     {
-        logger($request->all());
-        
-        $buttons = Button::firstOrCreate($request->all());
+        $buttons = Button::where('key', $request->input('key'))
+            ->where('value', $request->input('value'))
+            ->get();
 
-        return new ButtonResource($buttons);
-    }
+        if ($buttons->isEmpty()){
+            $button = Button::create($request->all());
+            $buttons = Button::where('key', $button->key)->get();
+        }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param Button $button
-     * @return ButtonResource
-     */
-    public function show(Button $button): ButtonResource
-    {
-        return new ButtonResource($button);
+        return $buttonService->getJsonResponse($buttons);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param Request $request
-     * @param Button $button
-     * @return ButtonResource
+     * @param ButtonService $buttonService
+     * @return JsonResponse
      */
-    public function update(Request $request, Button $button): ButtonResource
+    public function update(Request $request, ButtonService $buttonService): JsonResponse
     {
+        $button = Button::find($request->input('key'));
+
+        if (!$button){
+            return Response::json(['Buttons not found'], 404);
+        }
+
+        /** @var Button $button */
         $button->update($request->all());
 
-        return new ButtonResource($button);
+        return $buttonService->getOneJsonResponse($button);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param Button $button
-     * @return ButtonResource
-     * @throws Exception
+     * @param ButtonService $buttonService
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function destroy(Button $button): ButtonResource
+    public function destroy(ButtonService $buttonService, Request $request): JsonResponse
     {
+        $button = Button::find($request->input('key'));
+
+        if (!$button){
+            return Response::json(['Buttons not found'], 404);
+        }
+
         $button->delete();
 
-        return new ButtonResource($button);
+        return $buttonService->getOneJsonResponse($button);
     }
 }
