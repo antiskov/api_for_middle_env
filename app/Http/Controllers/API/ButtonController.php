@@ -29,6 +29,8 @@ class ButtonController extends Controller
      */
     public function store(Request $request): ButtonResource
     {
+        logger($request->all());
+        
         $buttons = Button::firstOrCreate($request->all());
 
         return new ButtonResource($buttons);

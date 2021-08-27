@@ -17,6 +17,8 @@ class Button extends Model
 
     protected $primaryKey = 'key';
 
+    public $incrementing = false;
+
     public function getRouteKeyName(): string
     {
         return 'key';
